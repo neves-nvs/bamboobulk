@@ -2,6 +2,7 @@
 
 const clockEntriesStorageKey = "clockEntries"
 const configsStorageKey = "bamboobulkConfigs"
+const projectsStorageKey = "bamboobulkProjects"
 
 export const setClockEntriesToStorage = (clockEntries) => {
     chrome.storage.local.set({[clockEntriesStorageKey]: clockEntries}).then(() => {
@@ -33,4 +34,20 @@ export const getConfigsFromStorage = async () => {
         console.log("Configs from storage:", result?.[configsStorageKey])
     }
     return result?.[configsStorageKey]
+}
+
+export const setProjectsToStorage = (projects) => {
+    chrome.storage.local.set({[projectsStorageKey]: projects}).then(() => {
+        if (window.__DEBUG__) {
+            console.log("Saved projects:", projects)
+        }
+    });
+}
+
+export const getProjectsFromStorage = async () => {
+    const result = await chrome.storage.local.get(projectsStorageKey)
+    if (window.__DEBUG__) {
+        console.log("Projects from storage:", result?.[projectsStorageKey])
+    }
+    return result?.[projectsStorageKey]
 }

@@ -4,6 +4,7 @@ export let employeeId
 export let csrfToken
 export let todayDayNum
 export let isEditable
+export let projects
 let pageTimesheet
 let timesheetStatus
 /*const timesheetStatuses = [
@@ -43,6 +44,25 @@ export const parseTimeSheetAndPopulateData = () => {
     employeeId = timesheetJson?.employeeId
     csrfToken = extractCsrfToken() //window.CSRF_TOKEN
     console.log("CSRF_TOKEN: ", csrfToken)
+
+    // Extract projects if available
+    // Projects are stored in projectsWithTasks.byId format
+    const projectsWithTasks = timesheetJson?.projectsWithTasks
+    if (projectsWithTasks && projectsWithTasks.byId) {
+        // Convert from byId object to array format
+        projects = Object.values(projectsWithTasks.byId).map(project => {
+            // Convert tasks from byId format to array
+            const tasks = project.tasks?.byId ? Object.values(project.tasks.byId) : []
+            return {
+                id: project.id,
+                name: project.name,
+                tasks: tasks
+            }
+        })
+    } else {
+        projects = timesheetJson?.projects || []
+    }
+    console.log("Projects: ", projects)
 
     todayDayNum = new Date(timesheetJson?.today?.date ?? Date.now()).getDate()
     console.log(todayDayNum)

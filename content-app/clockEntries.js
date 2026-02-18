@@ -22,7 +22,7 @@ export const populateOneDayClockEntriesWithData = (
     dateDayOfWeekNum = new Date(dateData).getDay()
 ) => {
     const dayEntries = entries.filter((entry) => entry.days?.includes(dateDayOfWeekNum)).map((entry, index) => {
-        let {start, end} = entry
+        let {start, end, projectId, taskId} = entry
         if (start === "24:00") {
             start = "00:00"
         }
@@ -37,8 +37,8 @@ export const populateOneDayClockEntriesWithData = (
             start,
             end,
             "note": "",
-            "projectId": null,
-            "taskId": null
+            "projectId": projectId || null,
+            "taskId": taskId || null
         }
     })
     return dayEntries

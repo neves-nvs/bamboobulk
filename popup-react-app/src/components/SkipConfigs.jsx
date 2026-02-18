@@ -26,7 +26,7 @@ export const SkipConfigs = () => {
     const handleVacation = (event) => handleChange(event, "skipTimeOffs")
 
     return (
-        <FormGroup row style={{marginLeft: "24px"}}>
+        <FormGroup row style={{justifyContent: "center"}}>
             <FormControlLabel
                 control={<Checkbox checked={configs.skipWeekends} onChange={handleWeekends}/>}
                 label="Skip Weekends"/>
