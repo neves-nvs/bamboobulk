@@ -10,16 +10,27 @@ import {bulkContainer} from "./bulk.js";
 import {fetchProjects} from "./api.js";
 
 //TODO: refactor the logic not to be dependent on site design changes, but only on actual raw data
-const timeSheetEntriesContainer = document.querySelector(".TimesheetEntries")
+const tryInject = () => {
+    const timeSheetEntriesContainer = document.querySelector(".TimesheetEntries")
+    if (!timeSheetEntriesContainer) return false
 
-if(timeSheetEntriesContainer){
     parseTimeSheetAndPopulateData()
 
-    if(isTimesheetParsed() && isEditable) {
+    if (isTimesheetParsed() && isEditable) {
         const clockInAndSummariesContainer = timeSheetEntriesContainer.nextSibling?.firstChild ?? timeSheetEntriesContainer.nextSibling ?? timeSheetEntriesContainer
         clockInAndSummariesContainer.prepend(bulkContainer()) // bulk button and actions logic
         populateEachDay() // each day "del"/"add" buttons and logic
     }
+    return true
+}
+
+// BambooHR mounts the timesheet as a code-split SPA chunk that can render after document_idle,
+// so keep watching the DOM until it shows up instead of checking just once.
+if (!tryInject()) {
+    const observer = new MutationObserver(() => {
+        if (tryInject()) observer.disconnect()
+    })
+    observer.observe(document.body, {childList: true, subtree: true})
 }
 
 // Listen for messages from popup to get projects

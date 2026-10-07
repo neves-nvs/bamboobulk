@@ -40,8 +40,8 @@ const doBulk = async () => {
         //skipping Holidays, Time Offs, Weekends if in configs
         if (skippingDay(configs, oneDay)) continue;
 
-        //only days below or equal today for current timesheet
-        if (isCurrentEditable() && !isDateTodayOrPast(oneDay.date)) continue;
+        //only days below or equal today for current timesheet, unless filling the whole month
+        if (isCurrentEditable() && !configs.fillWholeMonth && !isDateTodayOrPast(oneDay.date)) continue;
 
         //skip days that already have clockEntries
         if (!!oneDay?.clockEntries?.length) continue;
