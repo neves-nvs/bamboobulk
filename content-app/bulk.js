@@ -14,28 +14,11 @@ import {delay, skippingDay} from "./utils.js";
 import {getClockEntriesFromStorage, getConfigsFromStorage} from "../common/storage";
 import {defaultConfigs} from "../common/defaults.js";
 
-const doBulk = async () => {
-    if (!isTimesheetParsed()) return;
-
-    //allow only current or previous pending editable timesheets
-    if (!isCurrentEditable() && !isPreviousEditable()) return;
-
-    const btn = document.getElementById("bamboobulk_btn")
-    btn.replaceWith(processingDiv())
-    const processedDayEl = document.getElementById("processed_day")
-
-    const storageEntries = await getClockEntriesFromStorage()
-    console.log("storageEntries:", storageEntries)
-
-    let configs = await getConfigsFromStorage()
-    if (!configs) {
-        configs = defaultConfigs
-    }
+const collectEligibleDays = (configs, storageEntries) => {
+    const eligibleDays = []
 
     for (const oneDay of Object.values(dailyDetails)) {
         if (!oneDay.date) continue;
-
-        processedDayEl.textContent = oneDay.date
 
         //skipping Holidays, Time Offs, Weekends if in configs
         if (skippingDay(configs, oneDay)) continue;
@@ -51,12 +34,45 @@ const doBulk = async () => {
             : populateClockEntriesFromDefault(oneDay.date, employeeId)
 
         if (!clockEntries.length) continue;
-        console.log(clockEntries)
-        await doOneDay(csrfToken, clockEntries)
-        await delay(500)
-
-        console.log(oneDay.date)
+        eligibleDays.push({date: oneDay.date, clockEntries})
     }
+
+    return eligibleDays
+}
+
+const doBulk = async () => {
+    if (!isTimesheetParsed()) return;
+
+    //allow only current or previous pending editable timesheets
+    if (!isCurrentEditable() && !isPreviousEditable()) return;
+
+    const btn = document.getElementById("bamboobulk_btn")
+    btn.replaceWith(processingDiv())
+    const processedDayEl = document.getElementById("processed_day")
+
+    const storageEntries = await getClockEntriesFromStorage()
+
+    let configs = await getConfigsFromStorage()
+    if (!configs) {
+        configs = defaultConfigs
+    }
+
+    const eligibleDays = collectEligibleDays(configs, storageEntries)
+
+    if (configs.batchRequests) {
+        //single request: the API accepts clock entries for multiple dates at once
+        processedDayEl.textContent = `${eligibleDays.length} days`
+        const allEntries = eligibleDays.flatMap(({clockEntries}) => clockEntries)
+        if (allEntries.length) await doOneDay(csrfToken, allEntries)
+    } else {
+        //one request per day, throttled, as BambooHR itself does
+        for (const {date, clockEntries} of eligibleDays) {
+            processedDayEl.textContent = date
+            await doOneDay(csrfToken, clockEntries)
+            await delay(500)
+        }
+    }
+
     location.reload()
 }
 

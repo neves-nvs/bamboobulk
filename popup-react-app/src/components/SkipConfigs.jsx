@@ -25,6 +25,7 @@ export const SkipConfigs = () => {
     const handleHolidays = (event) => handleChange(event, "skipHolidays")
     const handleVacation = (event) => handleChange(event, "skipTimeOffs")
     const handleFillWholeMonth = (event) => handleChange(event, "fillWholeMonth")
+    const handleBatchRequests = (event) => handleChange(event, "batchRequests")
 
     return (
         <FormGroup row style={{justifyContent: "center"}}>
@@ -40,6 +41,9 @@ export const SkipConfigs = () => {
             <FormControlLabel
                 control={<Checkbox checked={configs.fillWholeMonth} onChange={handleFillWholeMonth}/>}
                 label="Fill Whole Month"/>
+            <FormControlLabel
+                control={<Checkbox checked={configs.batchRequests} onChange={handleBatchRequests}/>}
+                label="Batch Requests"/>
         </FormGroup>
     )
 }

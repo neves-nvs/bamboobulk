@@ -2,5 +2,6 @@ export const defaultConfigs = {
     skipWeekends: true,
     skipHolidays: true,
     skipTimeOffs: true,
-    fillWholeMonth: false
+    fillWholeMonth: false,
+    batchRequests: false
 }
