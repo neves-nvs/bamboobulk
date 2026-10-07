@@ -83,7 +83,13 @@ export const populateEachDay = async () => {
             const oneDay = dailyDetails[dateData]
             if(!oneDay || skippingDay(configs, oneDay)) return;
 
-            el.appendChild(isDateContainsTimeEntries(dateData) ? delBtn(dateData) : addBtn(dateData))
+            //position relative to the slat's inner content box, not the whole row
+            const btnContainer = el.querySelector(".fabric-5qovnk-root.MuiBox-root") ?? el
+            btnContainer.style.position = "relative"
+            const btn = isDateContainsTimeEntries(dateData) ? delBtn(dateData) : addBtn(dateData)
+            //match the container's own right padding instead of hugging the raw edge
+            btn.style.right = getComputedStyle(btnContainer).paddingRight
+            btnContainer.appendChild(btn)
         }catch (e) {
             console.log(e)
         }
