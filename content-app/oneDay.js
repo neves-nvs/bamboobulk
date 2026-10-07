@@ -9,8 +9,7 @@ import {
     employeeId,
     isCurrentEditable,
     isPreviousEditable,
-    isDateContainsTimeEntries,
-    isDateTodayOrPast
+    isDateContainsTimeEntries
 } from "./timesheetData.js";
 import {deleteOneDayEntries, doOneDay} from "./api.js";
 import {addZero, skippingDay} from "./utils.js";
@@ -80,9 +79,6 @@ export const populateEachDay = async () => {
             const year = new Date().getFullYear()
             const dateTimeData = new Date(dayDate.textContent + " " + year)
             const dateData = `${year}-${addZero(dateTimeData.getMonth()+1)}-${addZero(dateTimeData.getDate())}`
-
-            const isEditable = isPreviousEditable() || isDateTodayOrPast(dateData)
-            if (!isEditable) return;
 
             const oneDay = dailyDetails[dateData]
             if(!oneDay || skippingDay(configs, oneDay)) return;
