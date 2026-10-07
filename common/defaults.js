@@ -3,5 +3,5 @@ export const defaultConfigs = {
     skipHolidays: true,
     skipTimeOffs: true,
     fillWholeMonth: false,
-    batchRequests: false
+    batchRequests: true
 }
