@@ -83,8 +83,10 @@ export const populateEachDay = async () => {
             const oneDay = dailyDetails[dateData]
             if(!oneDay || skippingDay(configs, oneDay)) return;
 
-            //position relative to the slat's inner content box, not the whole row
-            const btnContainer = el.querySelector(".fabric-5qovnk-root.MuiBox-root") ?? el
+            //position relative to the slat's inner content box, not the whole row.
+            //anchored via dayDate (stable, semantic class) rather than the generic MuiBox-root
+            //match, which can instead hit an earlier "Pay Period Begins/Ends" banner box.
+            const btnContainer = dayDate.closest(".MuiBox-root") ?? el
             btnContainer.style.position = "relative"
             const btn = isDateContainsTimeEntries(dateData) ? delBtn(dateData) : addBtn(dateData)
             //match the container's own right padding instead of hugging the raw edge
