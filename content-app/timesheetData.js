@@ -30,40 +30,32 @@ const extractCsrfToken = () => {
     }
 }
 
-export const parseTimeSheetAndPopulateData = () => {
-    const timesheetJsonEl = document.getElementById("js-timesheet-data")
-    if (!timesheetJsonEl) return;
+// BambooHR no longer embeds #js-timesheet-data; the page loads it from this API instead.
+// employeeId is only needed to bootstrap the request; the response repeats it.
+const findEmployeeId = () => {
+    const fromRequest = performance.getEntriesByType("resource")
+        .map(r => new URL(r.name, location.href).searchParams.get("employeeId"))
+        .find(Boolean)
+    return Number(fromRequest ?? new URLSearchParams(location.search).get("employeeId")) || undefined
+}
 
-    const timesheetJson = JSON.parse(timesheetJsonEl.textContent)
-    console.log(timesheetJson)
+export const parseTimeSheetAndPopulateData = async () => {
+    const id = findEmployeeId()
+    if (!id) return
+    const res = await fetch(`/api/v1/time-tracking/timesheets/employee-timesheet-tab?employeeId=${id}`, {credentials: "same-origin"})
+    if (!res.ok) return
+    const json = await res.json()
 
-    pageTimesheet = timesheetJson?.timesheet
+    pageTimesheet = json?.timesheet
     timesheetStatus = pageTimesheet?.status
     isEditable = !!pageTimesheet?.canEdit
     dailyDetails = pageTimesheet?.dailyDetails
-    employeeId = timesheetJson?.employeeId
+    employeeId = json?.employeeId ?? id
     csrfToken = extractCsrfToken() //window.CSRF_TOKEN
-    console.log("CSRF_TOKEN: ", csrfToken)
-
-    // Extract projects if available
-    // Projects are stored in projectsWithTasks.byId format
-    const projectsWithTasks = timesheetJson?.projectsWithTasks
-    if (projectsWithTasks && projectsWithTasks.byId) {
-        // Convert from byId object to array format
-        projects = Object.values(projectsWithTasks.byId).map(project => {
-            // Convert tasks from byId format to array
-            const tasks = project.tasks?.byId ? Object.values(project.tasks.byId) : []
-            return {
-                id: project.id,
-                name: project.name,
-                tasks: tasks
-            }
-        })
-    } else {
-        projects = timesheetJson?.projects || []
-    }
-    console.log("Projects: ", projects)
-
-    todayDayNum = new Date(timesheetJson?.today?.date ?? Date.now()).getDate()
-    console.log(todayDayNum)
+    projects = Object.values(json?.projectsWithTasks?.byId ?? {}).map(p => ({
+        id: p.id,
+        name: p.name,
+        tasks: Object.values(p.tasks?.byId ?? {})
+    }))
+    todayDayNum = new Date(json?.today?.date ?? Date.now()).getDate()
 }
